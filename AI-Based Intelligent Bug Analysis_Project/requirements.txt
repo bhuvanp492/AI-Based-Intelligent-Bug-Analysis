@@ -1,0 +1,22 @@
+# AI-Based Intelligent Bug Analysis and Security Risk Prioritization System
+# Core Application Dependencies
+Flask>=3.0.0
+Werkzeug>=3.0.0
+
+# Data Engineering
+pandas>=2.1.0
+numpy>=1.26.0
+
+# AI & Machine Learning Engineering
+scikit-learn>=1.4.0
+joblib>=1.3.0
+scipy>=1.12.0
+
+# Reporting & Visualization
+reportlab>=4.1.0
+
+# Production WSGI Server (Choose Gunicorn on Linux/Cloud or Waitress on Windows)
+waitress>=3.0.0
+
+# Testing & Quality Assurance
+pytest>=8.0.0

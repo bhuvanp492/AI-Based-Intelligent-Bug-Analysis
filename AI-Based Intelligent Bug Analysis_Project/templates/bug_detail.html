@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Report {{ report.bug_id }} • AI Bug Analysis{% endblock %}
+{% block page_heading %}Bug Report Investigation{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+  <div>
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+      <span class="code-snippet" style="font-size: 13px; font-weight: 700;">{{ report.bug_id }}</span>
+      <span class="badge badge-{{ report.severity|lower }}">{{ report.severity }} Severity</span>
+      <span class="badge badge-{{ report.risk_level|lower }}">Risk: {{ report.risk_score }}/100 ({{ report.risk_level }})</span>
+      <span class="badge badge-neutral">Source: {{ report.source_type }}</span>
+    </div>
+    <h1 class="page-title">{{ report.title }}</h1>
+    <p class="page-subtitle">Registered on {{ report.created_at }} &bull; Last updated {{ report.updated_at }}</p>
+  </div>
+  <div style="display: flex; gap: 8px;">
+    <a href="{{ url_for('bugs.bug_list') }}" class="btn btn-secondary btn-sm">&larr; Back to Bug List</a>
+  </div>
+</div>
+
+<div class="grid-2col">
+  <!-- Left Column: Report Details & Security Scan -->
+  <div>
+    <!-- Bug Description Card -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Bug Description & Problem Statement</span>
+      </div>
+      <div style="white-space: pre-wrap; font-size: 13px; line-height: 1.6; color: var(--text-main);">
+{{ report.description }}
+      </div>
+    </div>
+
+    <!-- Security Risk Prioritization Card -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Security Risk Prioritization Assessment</span>
+        {% if report.is_security_related %}
+          <span class="badge badge-critical">Security Flagged</span>
+        {% else %}
+          <span class="badge badge-low">No Vulnerability Indicators</span>
+        {% endif %}
+      </div>
+
+      <div class="risk-meter">
+        <div class="risk-score-display" style="color: {% if report.risk_score >= 81 %}var(--status-danger){% elif report.risk_score >= 56 %}var(--status-warning){% elif report.risk_score >= 26 %}var(--status-info){% else %}var(--status-success){% endif %};">
+          {{ report.risk_score }}
+        </div>
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; text-transform: uppercase; margin-bottom: 4px;">
+            <span>Prioritization Risk Level: {{ report.risk_level }}</span>
+            <span>Scale 0 - 100</span>
+          </div>
+          <div class="risk-bar-container">
+            <div class="risk-bar-fill" style="width: {{ report.risk_score }}%; background-color: {% if report.risk_score >= 81 %}var(--status-danger){% elif report.risk_score >= 56 %}var(--status-warning){% elif report.risk_score >= 26 %}var(--status-info){% else %}var(--status-success){% endif %};"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formula Breakdown -->
+      <div style="background: var(--bg-surface-secondary); padding: 12px; border-radius: var(--radius-sm); margin-top: 14px; font-size: 12px;">
+        <div style="font-weight: 600; margin-bottom: 6px;">Transparent Scoring Formula Breakdown:</div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;">
+          <div>&bull; {{ risk_breakdown.severity_component.label }}: <strong>+{{ risk_breakdown.severity_component.score }}</strong> / {{ risk_breakdown.severity_component.max }} pts</div>
+          <div>&bull; {{ risk_breakdown.ml_classifier_component.label }}: <strong>+{{ risk_breakdown.ml_classifier_component.score }}</strong> / {{ risk_breakdown.ml_classifier_component.max }} pts</div>
+          <div>&bull; {{ risk_breakdown.indicator_rules_component.label }}: <strong>+{{ risk_breakdown.indicator_rules_component.score }}</strong> / {{ risk_breakdown.indicator_rules_component.max }} pts</div>
+          <div>&bull; {{ risk_breakdown.module_criticality_component.label }}: <strong>+{{ risk_breakdown.module_criticality_component.score }}</strong> / {{ risk_breakdown.module_criticality_component.max }} pts</div>
+        </div>
+      </div>
+
+      <!-- Detected Security Indicators -->
+      {% if indicators %}
+        <div style="margin-top: 16px;">
+          <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">Detected Vulnerability Indicators ({{ indicators|length }}):</div>
+          {% for ind in indicators %}
+            <div style="border-left: 3px solid var(--status-danger); padding-left: 10px; margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                <span style="font-weight: 600; font-size: 13px;">{{ ind.name }}</span>
+                <span class="badge badge-neutral">{{ ind.cwe }}</span>
+              </div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">{{ ind.recommendation }}</div>
+              {% if ind.evidence_snippets %}
+                <div style="font-size: 11px;">
+                  Evidence:
+                  {% for snip in ind.evidence_snippets %}
+                    <span class="code-snippet">{{ snip }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Recommended Action -->
+      <div style="margin-top: 16px; border-top: 1px solid var(--border-subtle); padding-top: 12px;">
+        <div style="font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Recommended Next Step:</div>
+        <p style="font-size: 13px; color: var(--text-muted);">{{ report.recommended_action or "Review code changes and execute component functional regression tests." }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: AI Predictions & Triage Governance -->
+  <div>
+    <!-- Machine Learning Predictions Card -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Machine Learning Triage Predictions</span>
+        <span class="badge badge-neutral">TF-IDF + Naive Bayes</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <!-- Severity -->
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: var(--text-muted);">Predicted Severity</span>
+            <span style="font-weight: 600;">{{ report.severity }} ({{ "%.1f"|format(report.confidence_severity * 100) }}%)</span>
+          </div>
+          <div class="conf-bar-container">
+            <div class="conf-bar-fill" style="width: {{ report.confidence_severity * 100 }}%;"></div>
+          </div>
+        </div>
+
+        <!-- Category -->
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: var(--text-muted);">Predicted Bug Category</span>
+            <span style="font-weight: 600;">{{ report.category }} ({{ "%.1f"|format(report.confidence_category * 100) }}%)</span>
+          </div>
+          <div class="conf-bar-container">
+            <div class="conf-bar-fill" style="width: {{ report.confidence_category * 100 }}%;"></div>
+          </div>
+        </div>
+
+        <!-- Affected Module -->
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: var(--text-muted);">Affected Module</span>
+            <span style="font-weight: 600;">{{ report.affected_module }} ({{ "%.1f"|format(report.confidence_module * 100) }}%)</span>
+          </div>
+          <div class="conf-bar-container">
+            <div class="conf-bar-fill" style="width: {{ report.confidence_module * 100 }}%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Natural Language Explanation -->
+      <div style="margin-top: 16px; border-top: 1px solid var(--border-subtle); padding-top: 12px;">
+        <div style="font-size: 12px; font-weight: 600; margin-bottom: 4px;">Model Explanation & Attribution:</div>
+        <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+          {{ report.explanation }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Triage Governance Status Card -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Triage Review & Governance</span>
+        <span class="badge badge-neutral">Audit Logged</span>
+      </div>
+
+      <form method="POST" action="{{ url_for('bugs.update_triage', bug_id=report.bug_id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        
+        <div class="form-group">
+          <label class="form-label">Current Triage Status</label>
+          <select name="triage_status" class="form-select">
+            {% for st in valid_statuses %}
+              <option value="{{ st }}" {% if report.triage_status == st %}selected{% endif %}>{{ st }}</option>
+            {% endfor %}
+          </select>
+          <div class="form-hint">Status updates are recorded in the audit trail.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-sm">Update Triage Status</button>
+      </form>
+    </div>
+
+    <!-- Similar Bugs Section -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Similar Bug Reports</span>
+        <span class="badge badge-neutral">Cosine Similarity</span>
+      </div>
+
+      {% if similar_bugs %}
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          {% for sb in similar_bugs %}
+            <div style="border: 1px solid var(--border-subtle); padding: 8px 10px; border-radius: var(--radius-sm); font-size: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span class="code-snippet">{{ sb.bug_id }}</span>
+                <span style="font-weight: 600; color: var(--brand-primary);">{{ sb.similarity_percentage }}% match</span>
+              </div>
+              <div style="font-weight: 500; margin-bottom: 4px;">
+                <a href="{{ url_for('bugs.bug_detail', bug_id=sb.bug_id) }}">{{ sb.title }}</a>
+              </div>
+              <div style="font-size: 11px; color: var(--text-muted);">
+                {{ sb.category }} &bull; {{ sb.severity }} Severity &bull; Risk: {{ sb.risk_score }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 12px;">
+          No other similar bug reports detected in database.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

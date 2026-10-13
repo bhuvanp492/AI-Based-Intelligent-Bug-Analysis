@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Analyse Bug • AI Bug Analysis{% endblock %}
+{% block page_heading %}Manual Bug Analysis{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+  <h1 class="page-title">Submit Bug Report for Analysis</h1>
+  <p class="page-subtitle">Enter bug report details to trigger real-time ML prediction, security vulnerability scanning, and risk scoring.</p>
+</div>
+
+<div class="grid-2col">
+  <!-- Submission Form -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Bug Report Information</span>
+    </div>
+
+    <form method="POST" action="{{ url_for('bugs.analyse') }}" id="analyseForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+      <div class="form-group">
+        <label class="form-label">Bug Title / Summary *</label>
+        <input type="text" name="title" id="bugTitle" class="form-control" placeholder="e.g., SQL Injection in search query parameter" value="{{ title or '' }}" required>
+        <div class="form-hint">A concise summary of the observed defect or vulnerability.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Detailed Bug Description *</label>
+        <textarea name="description" id="bugDescription" class="form-control" rows="6" placeholder="Describe the steps to reproduce, error stack traces, parameters, or observed behavior..." required>{{ description or '' }}</textarea>
+        <div class="form-hint">Include technical terms, URLs, parameters, or code snippets for higher analysis accuracy.</div>
+      </div>
+
+      <div class="grid-2col" style="gap: 12px;">
+        <div class="form-group">
+          <label class="form-label">Bug ID (Optional)</label>
+          <input type="text" name="bug_id" class="form-control" placeholder="Auto-generated if blank (e.g. BUG-A1B2)">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Affected Module (Optional)</label>
+          <select name="module_hint" id="bugModule" class="form-select">
+            <option value="">-- Let ML Model Predict Module --</option>
+            {% for mod in valid_modules %}
+              <option value="{{ mod }}">{{ mod }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button type="submit" class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          Analyse & Prioritize Bug
+        </button>
+        <button type="reset" class="btn btn-secondary">Clear</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Demo Presets & Pipeline Overview -->
+  <div>
+    <!-- Interactive Demo Pre-fill Presets -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Quick Demo Presets</span>
+        <span class="badge badge-neutral">1-Click Fill</span>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+        Select any sample scenario below to quickly populate the form and evaluate the triage pipeline:
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="fillPreset('sqli')" style="text-align: left; justify-content: flex-start;">
+          <strong>SQLi:</strong> Raw query parameter injection in product filter
+        </button>
+
+        <button type="button" class="btn btn-secondary btn-sm" onclick="fillPreset('xss')" style="text-align: left; justify-content: flex-start;">
+          <strong>XSS:</strong> Unescaped script payload execution in dashboard profile
+        </button>
+
+        <button type="button" class="btn btn-secondary btn-sm" onclick="fillPreset('logic')" style="text-align: left; justify-content: flex-start;">
+          <strong>Logic Error:</strong> Multi-tab discount coupon double application
+        </button>
+
+        <button type="button" class="btn btn-secondary btn-sm" onclick="fillPreset('perf')" style="text-align: left; justify-content: flex-start;">
+          <strong>Performance:</strong> High latency unindexed full table scan on transactions
+        </button>
+
+        <button type="button" class="btn btn-secondary btn-sm" onclick="fillPreset('ui')" style="text-align: left; justify-content: flex-start;">
+          <strong>UI Defect:</strong> Button overlap and dropdown clipping on mobile viewport
+        </button>
+      </div>
+    </div>
+
+    <!-- Pipeline Workflow Explanation Card -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Automated Analysis Pipeline</span>
+      </div>
+      <div style="font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 10px;">
+        <div>
+          <strong style="color: var(--text-main);">1. Data Normalization & NLP:</strong>
+          Combined text is normalized, maintaining security-critical tokens, and transformed into TF-IDF n-gram vectors.
+        </div>
+        <div>
+          <strong style="color: var(--text-main);">2. Machine Learning Multi-Classifier:</strong>
+          Trained Multinomial Naive Bayes models evaluate severity, bug category, and affected software module.
+        </div>
+        <div>
+          <strong style="color: var(--text-main);">3. Hybrid Security Screening:</strong>
+          Rule-based scanner detects CWE vulnerability signatures (SQLi, XSS, RCE, IDOR, etc.) and extracts contextual evidence snippets.
+        </div>
+        <div>
+          <strong style="color: var(--text-main);">4. Risk Prioritization Score (0-100):</strong>
+          Calculated using base severity, ML security probability, rule indicators, and module criticality.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function fillPreset(type) {
+    const titleInput = document.getElementById("bugTitle");
+    const descInput = document.getElementById("bugDescription");
+    const modSelect = document.getElementById("bugModule");
+
+    if (type === 'sqli') {
+      titleInput.value = "SQL Injection in customer query search API";
+      descInput.value = "GET /api/v1/customers?name= is concatenated directly into SQL statement: SELECT * FROM customers WHERE name LIKE '%'+name+'%' without parameter binding. Exploitable via ' OR '1'='1 to dump customer records.";
+      modSelect.value = "Database";
+    } else if (type === 'xss') {
+      titleInput.value = "Reflected Cross-Site Scripting in profile display name";
+      descInput.value = "User display name parameter is echoed unescaped inside the DOM. Submitting <script>alert(document.cookie)</script> executes JavaScript inside the victim browser session.";
+      modSelect.value = "Dashboard";
+    } else if (type === 'logic') {
+      titleInput.value = "Double discount voucher application during concurrent checkout";
+      descInput.value = "Submitting checkout order simultaneously from two browser tabs allows applying a single-use $50 promotion voucher twice, reducing total price below minimum threshold.";
+      modSelect.value = "Payment";
+    } else if (type === 'perf') {
+      titleInput.value = "Dashboard analytics timeout due to missing database index";
+      descInput.value = "Loading analytics view takes 22 seconds due to unindexed full table scan across 3 million transaction rows in orders table.";
+      modSelect.value = "Dashboard";
+    } else if (type === 'ui') {
+      titleInput.value = "Modal backdrop z-index glitch blocks submit button on Safari";
+      descInput.value = "On iOS Safari, the modal overlay z-index renders above the confirmation button, preventing users from clicking Save Changes.";
+      modSelect.value = "Dashboard";
+    }
+  }
+</script>
+{% endblock %}

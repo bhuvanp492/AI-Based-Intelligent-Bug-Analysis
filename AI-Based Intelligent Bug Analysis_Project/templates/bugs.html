@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Bug Reports Directory • AI Bug Analysis{% endblock %}
+{% block page_heading %}Bug Reports Registry{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+  <div>
+    <h1 class="page-title">Bug Reports Registry</h1>
+    <p class="page-subtitle">Search, filter, and inspect triaged bug reports across all components.</p>
+  </div>
+  <div style="display: flex; gap: 8px;">
+    <a href="{{ url_for('bugs.export_csv', search=search, severity=sev_filter, category=cat_filter, risk_level=risk_filter, triage_status=triage_filter) }}" class="btn btn-secondary btn-sm">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      Export CSV
+    </a>
+    <a href="{{ url_for('bugs.export_pdf', search=search, severity=sev_filter, category=cat_filter, risk_level=risk_filter, triage_status=triage_filter) }}" class="btn btn-secondary btn-sm">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+      Export PDF
+    </a>
+    <a href="{{ url_for('bugs.analyse') }}" class="btn btn-primary btn-sm">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      Add Single Bug
+    </a>
+  </div>
+</div>
+
+<!-- Filter and Search Bar -->
+<div class="card" style="padding: 14px 16px; margin-bottom: 16px;">
+  <form method="GET" action="{{ url_for('bugs.bug_list') }}" class="filter-bar">
+    <div style="flex: 2; min-width: 200px;">
+      <input type="text" name="search" class="form-control" placeholder="Search by title, description, or Bug ID..." value="{{ search }}">
+    </div>
+
+    <div style="flex: 1; min-width: 120px;">
+      <select name="severity" class="form-select">
+        <option value="">All Severities</option>
+        {% for sev in valid_severities %}
+          <option value="{{ sev }}" {% if sev_filter == sev %}selected{% endif %}>{{ sev }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 130px;">
+      <select name="category" class="form-select">
+        <option value="">All Categories</option>
+        {% for cat in valid_categories %}
+          <option value="{{ cat }}" {% if cat_filter == cat %}selected{% endif %}>{{ cat }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 130px;">
+      <select name="module" class="form-select">
+        <option value="">All Modules</option>
+        {% for mod in valid_modules %}
+          <option value="{{ mod }}" {% if mod_filter == mod %}selected{% endif %}>{{ mod }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 120px;">
+      <select name="risk_level" class="form-select">
+        <option value="">All Risk Levels</option>
+        <option value="Critical" {% if risk_filter == 'Critical' %}selected{% endif %}>Critical</option>
+        <option value="High" {% if risk_filter == 'High' %}selected{% endif %}>High</option>
+        <option value="Medium" {% if risk_filter == 'Medium' %}selected{% endif %}>Medium</option>
+        <option value="Low" {% if risk_filter == 'Low' %}selected{% endif %}>Low</option>
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 130px;">
+      <select name="triage_status" class="form-select">
+        <option value="">All Triage States</option>
+        {% for st in valid_statuses %}
+          <option value="{{ st }}" {% if triage_filter == st %}selected{% endif %}>{{ st }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    {% if search or sev_filter or cat_filter or mod_filter or risk_filter or triage_filter %}
+      <a href="{{ url_for('bugs.bug_list') }}" class="btn btn-secondary btn-sm">Reset</a>
+    {% endif %}
+  </form>
+</div>
+
+<!-- Results Header & Counter -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; color: var(--text-muted);">
+  <span>Showing {{ reports|length }} of <strong>{{ total_count }}</strong> matching bug reports</span>
+  <span>Page {{ page }} of {{ total_pages }}</span>
+</div>
+
+<!-- Table Card -->
+<div class="card" style="padding: 0; overflow: hidden;">
+  <div class="table-container" style="border: none;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Bug ID</th>
+          <th>Title</th>
+          <th>Severity</th>
+          <th>Category</th>
+          <th>Module</th>
+          <th>Security Flag</th>
+          <th>Risk Score</th>
+          <th>Triage Status</th>
+          <th>Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if reports %}
+          {% for r in reports %}
+            <tr>
+              <td><span class="code-snippet">{{ r.bug_id }}</span></td>
+              <td style="max-width: 260px; font-weight: 500;">
+                <a href="{{ url_for('bugs.bug_detail', bug_id=r.bug_id) }}">{{ r.title }}</a>
+              </td>
+              <td><span class="badge badge-{{ r.severity|lower }}">{{ r.severity }}</span></td>
+              <td>{{ r.category }}</td>
+              <td>{{ r.affected_module }}</td>
+              <td>
+                {% if r.is_security_related %}
+                  <span class="badge badge-critical">Security</span>
+                {% else %}
+                  <span class="badge badge-neutral">Functional</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge badge-{{ r.risk_level|lower }}">
+                  {{ r.risk_score }} ({{ r.risk_level }})
+                </span>
+              </td>
+              <td><span class="badge badge-neutral">{{ r.triage_status }}</span></td>
+              <td style="font-size: 11px; color: var(--text-muted);">{{ r.created_at[:10] }}</td>
+              <td>
+                <a href="{{ url_for('bugs.bug_detail', bug_id=r.bug_id) }}" class="btn btn-secondary btn-sm">Inspect</a>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="10" style="text-align: center; padding: 40px; color: var(--text-muted);">
+              No bug reports match your filter criteria. Try resetting filters or uploading a dataset.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Pagination Controls -->
+{% if total_pages > 1 %}
+  <div class="pagination">
+    {% if page > 1 %}
+      <a href="{{ url_for('bugs.bug_list', page=page-1, search=search, severity=sev_filter, category=cat_filter, module=mod_filter, risk_level=risk_filter, triage_status=triage_filter) }}" class="page-btn">&laquo; Previous</a>
+    {% endif %}
+
+    {% for p in range(1, total_pages + 1) %}
+      {% if p == page %}
+        <span class="page-btn active">{{ p }}</span>
+      {% elif p <= 3 or p >= total_pages - 2 or (p >= page - 1 and p <= page + 1) %}
+        <a href="{{ url_for('bugs.bug_list', page=p, search=search, severity=sev_filter, category=cat_filter, module=mod_filter, risk_level=risk_filter, triage_status=triage_filter) }}" class="page-btn">{{ p }}</a>
+      {% elif p == 4 or p == total_pages - 3 %}
+        <span class="page-btn" style="border:none; background:none;">...</span>
+      {% endif %}
+    {% endfor %}
+
+    {% if page < total_pages %}
+      <a href="{{ url_for('bugs.bug_list', page=page+1, search=search, severity=sev_filter, category=cat_filter, module=mod_filter, risk_level=risk_filter, triage_status=triage_filter) }}" class="page-btn">Next &raquo;</a>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

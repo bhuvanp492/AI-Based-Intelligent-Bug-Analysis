@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Security Analysis • AI Bug Analysis{% endblock %}
+{% block page_heading %}Security Engineering & Triage{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+  <h1 class="page-title">Security Vulnerability Analysis & Risk Prioritization</h1>
+  <p class="page-subtitle">Hybrid detection combining machine learning classification with rule-based security indicator pattern matching.</p>
+</div>
+
+<!-- Security KPI Cards -->
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-label">Security Flagged Issues</div>
+    <div class="kpi-value" style="color: var(--status-warning);">{{ total_sec }}</div>
+    <div class="kpi-subtext">Identified by classifier or rule rules</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Critical Risk Prioritized</div>
+    <div class="kpi-value" style="color: var(--status-danger);">{{ crit_risk_sec }}</div>
+    <div class="kpi-subtext">Risk score &ge; 81 / 100</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Pending Verification</div>
+    <div class="kpi-value" style="color: var(--brand-primary);">{{ pending_sec }}</div>
+    <div class="kpi-subtext">Awaiting human AppSec review</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Confirmed Vulnerabilities</div>
+    <div class="kpi-value" style="color: var(--status-success);">{{ confirmed_sec }}</div>
+    <div class="kpi-subtext">Verified by security team</div>
+  </div>
+</div>
+
+<!-- Detected Indicator Breakdown Catalog -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Vulnerability Category Detection Catalog</span>
+    <span class="badge badge-neutral">9 Active Rule Engines</span>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px;">
+    {% for rule in security_rules %}
+      <div style="background: var(--bg-surface-secondary); padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <span style="font-weight: 600; font-size: 12px;">{{ rule.name }}</span>
+          <span class="badge badge-neutral">{{ rule.cwe }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+          <span>Weight: +{{ rule.weight }} pts</span>
+          <strong style="color: {% if rule_counts.get(rule.name, 0) > 0 %}var(--status-danger){% else %}var(--text-muted){% endif %};">
+            {{ rule_counts.get(rule.name, 0) }} Detected
+          </strong>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Filters & Triage Queue -->
+<div class="card" style="padding: 14px 16px; margin-bottom: 16px;">
+  <form method="GET" action="{{ url_for('security.security_dashboard') }}" class="filter-bar">
+    <div style="flex: 1; min-width: 160px;">
+      <select name="triage_status" class="form-select">
+        <option value="">All Triage Statuses</option>
+        {% for st in valid_statuses %}
+          <option value="{{ st }}" {% if triage_filter == st %}selected{% endif %}>{{ st }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 160px;">
+      <select name="risk_level" class="form-select">
+        <option value="">All Risk Levels</option>
+        <option value="Critical" {% if risk_filter == 'Critical' %}selected{% endif %}>Critical Risk (81-100)</option>
+        <option value="High" {% if risk_filter == 'High' %}selected{% endif %}>High Risk (56-80)</option>
+        <option value="Medium" {% if risk_filter == 'Medium' %}selected{% endif %}>Medium Risk (26-55)</option>
+        <option value="Low" {% if risk_filter == 'Low' %}selected{% endif %}>Low Risk (0-25)</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-sm">Filter Triage Queue</button>
+    {% if triage_filter or risk_filter %}
+      <a href="{{ url_for('security.security_dashboard') }}" class="btn btn-secondary btn-sm">Reset</a>
+    {% endif %}
+  </form>
+</div>
+
+<!-- Flagged Vulnerability Queue Table -->
+<div class="card" style="padding: 0; overflow: hidden;">
+  <div class="card-header" style="padding: 14px 18px; margin-bottom: 0;">
+    <span class="card-title">Security Prioritization Queue ({{ bugs|length }} issues)</span>
+  </div>
+  <div class="table-container" style="border: none;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Bug ID</th>
+          <th>Bug Summary</th>
+          <th>Module</th>
+          <th>Risk Score</th>
+          <th>Detected CWE Indicators</th>
+          <th>Triage Status</th>
+          <th>Recommended Mitigations</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if bugs %}
+          {% for b in bugs %}
+            <tr>
+              <td><span class="code-snippet">{{ b.bug_id }}</span></td>
+              <td style="max-width: 240px; font-weight: 500;">
+                <a href="{{ url_for('bugs.bug_detail', bug_id=b.bug_id) }}">{{ b.title }}</a>
+              </td>
+              <td>{{ b.affected_module }}</td>
+              <td>
+                <span class="badge badge-{{ b.risk_level|lower }}">
+                  {{ b.risk_score }} / 100 ({{ b.risk_level }})
+                </span>
+              </td>
+              <td>
+                {% if b.indicators_parsed %}
+                  {% for ind in b.indicators_parsed %}
+                    <span class="badge badge-critical" style="margin: 1px 0;" title="{{ ind.name }}">{{ ind.cwe }}</span>
+                  {% endfor %}
+                {% else %}
+                  <span class="badge badge-neutral">Classifier Pattern</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge {% if b.triage_status == 'Confirmed Vulnerability' %}badge-critical{% elif b.triage_status == 'Investigating' %}badge-high{% else %}badge-neutral{% endif %}">
+                  {{ b.triage_status }}
+                </span>
+              </td>
+              <td style="font-size: 11px; max-width: 240px; color: var(--text-muted);">
+                {{ b.recommended_action[:70] }}...
+              </td>
+              <td>
+                <a href="{{ url_for('bugs.bug_detail', bug_id=b.bug_id) }}" class="btn btn-secondary btn-sm">Triage</a>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">
+              No security-related bug reports match your filter criteria.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Security Principles Alert -->
+<div class="alert alert-info" style="margin-top: 16px;">
+  <span>
+    <strong>Security Principles & Policy:</strong> Automated security analysis produces prioritized preliminary screening indicators based on CWE patterns and NLP signals. No reported issue is marked as a confirmed vulnerability without independent engineer verification.
+  </span>
+</div>
+{% endblock %}

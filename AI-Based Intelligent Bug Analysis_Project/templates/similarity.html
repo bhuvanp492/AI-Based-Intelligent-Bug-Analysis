@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Similar Bugs • AI Bug Analysis{% endblock %}
+{% block page_heading %}TF-IDF Similarity Search{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+  <h1 class="page-title">Similar Bug Report Retrieval & Grouping</h1>
+  <p class="page-subtitle">Group related or potentially duplicate bug reports using TF-IDF vector embeddings and cosine similarity.</p>
+</div>
+
+<!-- Search Query Form -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Similarity Query Parameters</span>
+  </div>
+
+  <form method="POST" action="{{ url_for('similarity.similarity_tool') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <div class="grid-2col">
+      <div class="form-group">
+        <label class="form-label">Option A: Select Existing Bug Report from Database</label>
+        <select name="selected_bug_id" class="form-select" onchange="if(this.value){document.getElementById('manualQuery').value='';}">
+          <option value="">-- Choose a Bug Report to Compare --</option>
+          {% for b in all_bugs %}
+            <option value="{{ b.bug_id }}" {% if selected_bug_id == b.bug_id %}selected{% endif %}>
+              [{{ b.bug_id }}] {{ b.title[:65] }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Option B: Enter Custom Symptoms or Query Text</label>
+        <input type="text" name="manual_query" id="manualQuery" class="form-control" placeholder="e.g., SQL syntax error when executing query parameter" value="{{ query_text if not selected_bug_id else '' }}">
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
+      <button type="submit" class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        Find Similar Bug Reports
+      </button>
+      <a href="{{ url_for('similarity.similarity_tool') }}" class="btn btn-secondary">Reset</a>
+    </div>
+  </form>
+</div>
+
+<!-- Similarity Results -->
+{% if results %}
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Top Ranked Similar Bug Reports ({{ results|length }} matches)</span>
+      <span class="badge badge-neutral">Cosine Similarity Metric</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      {% for r in results %}
+        <div style="border: 1px solid var(--border-subtle); padding: 14px 16px; border-radius: var(--radius-md); background: var(--bg-surface);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="code-snippet">{{ r.bug_id }}</span>
+              <a href="{{ url_for('bugs.bug_detail', bug_id=r.bug_id) }}" style="font-weight: 600; font-size: 14px;">{{ r.title }}</a>
+            </div>
+            <div style="text-align: right;">
+              <span class="badge badge-primary" style="font-size: 12px; font-weight: 700;">{{ r.similarity_percentage }}% Similarity</span>
+            </div>
+          </div>
+
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px; line-height: 1.5;">
+            {{ r.description }}
+          </p>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; border-top: 1px solid var(--border-subtle); padding-top: 8px;">
+            <div style="display: flex; gap: 10px;">
+              <span><strong>Category:</strong> {{ r.category }}</span>
+              <span><strong>Severity:</strong> <span class="badge badge-{{ r.severity|lower }}">{{ r.severity }}</span></span>
+              <span><strong>Module:</strong> {{ r.affected_module }}</span>
+              <span><strong>Risk:</strong> {{ r.risk_score }} ({{ r.risk_level }})</span>
+            </div>
+            <a href="{{ url_for('bugs.bug_detail', bug_id=r.bug_id) }}" class="btn btn-secondary btn-sm">Inspect Bug &rarr;</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% elif query_text or selected_bug_id %}
+  <div class="card empty-state">
+    <h3 class="empty-state-title">No Similar Reports Found</h3>
+    <p style="font-size: 13px; color: var(--text-muted);">
+      No existing bug reports met the similarity threshold for the provided query.
+    </p>
+  </div>
+{% endif %}
+
+<!-- Advisory Alert -->
+<div class="alert alert-info" style="margin-top: 16px;">
+  <span>
+    <strong>Methodology Note:</strong> Cosine similarity measures the angle between normalized TF-IDF vector representations of bug descriptions. High similarity indicates overlapping symptoms, libraries, or terminology, but does not guarantee duplicate status without human confirmation.
+  </span>
+</div>
+{% endblock %}

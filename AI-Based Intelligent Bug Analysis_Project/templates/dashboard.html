@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Overview • AI Bug Analysis{% endblock %}
+{% block page_heading %}Operations Overview{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+  <div>
+    <h1 class="page-title">Bug Analysis & Security Triage Dashboard</h1>
+    <p class="page-subtitle">Real-time telemetry, machine learning predictions, and security risk prioritization.</p>
+  </div>
+  <div style="display: flex; gap: 8px;">
+    <a href="{{ url_for('datasets.upload') }}" class="btn btn-secondary btn-sm">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+      Upload Dataset
+    </a>
+    <a href="{{ url_for('bugs.export_pdf') }}" class="btn btn-secondary btn-sm">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+      Export PDF
+    </a>
+  </div>
+</div>
+
+{% if total_bugs == 0 %}
+  <!-- Empty State with one-click sample loader -->
+  <div class="card empty-state">
+    <div class="empty-state-icon">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="12" y1="18" x2="12" y2="12"></line>
+        <line x1="9" y1="15" x2="15" y2="15"></line>
+      </svg>
+    </div>
+    <h2 class="empty-state-title">No Bug Reports in Database Yet</h2>
+    <p style="max-width: 500px; margin: 0 auto 20px; font-size: 13px;">
+      Get started by loading the demonstration sample dataset or uploading a custom CSV file to see automated machine learning triage and security prioritization in action.
+    </p>
+    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+      <form action="{{ url_for('datasets.load_sample') }}" method="POST" style="display: inline;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="action" value="ingest_sample_bugs">
+        <button type="submit" class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          Load Sample Bug Reports (25 Issues)
+        </button>
+      </form>
+
+      <form action="{{ url_for('datasets.load_sample') }}" method="POST" style="display: inline;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="action" value="train_models">
+        <button type="submit" class="btn btn-secondary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+          Train AI Models on Sample Data (100 Samples)
+        </button>
+      </form>
+    </div>
+  </div>
+{% else %}
+  <!-- KPI Metrics Grid -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Reports Analyzed</div>
+      <div class="kpi-value">{{ total_bugs }}</div>
+      <div class="kpi-subtext">Stored in SQLite persistent registry</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">High / Critical Urgency</div>
+      <div class="kpi-value" style="color: var(--status-danger);">{{ high_crit_bugs }}</div>
+      <div class="kpi-subtext">{{ "%.1f"|format(high_crit_bugs / total_bugs * 100 if total_bugs > 0 else 0) }}% of total ingested bugs</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Security Flagged Bugs</div>
+      <div class="kpi-value" style="color: var(--status-warning);">{{ security_bugs }}</div>
+      <div class="kpi-subtext">Identified via hybrid screening</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Pending Triage Review</div>
+      <div class="kpi-value" style="color: var(--brand-primary);">{{ pending_triage }}</div>
+      <div class="kpi-subtext">Awaiting security officer verification</div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="grid-2col" style="margin-bottom: 24px;">
+    <div class="card" style="margin-bottom: 0;">
+      <div class="card-header">
+        <span class="card-title">Severity Distribution</span>
+        <span class="badge badge-neutral">ML Classification</span>
+      </div>
+      <div style="height: 240px; position: relative;">
+        <canvas id="severityChart"></canvas>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 0;">
+      <div class="card-header">
+        <span class="card-title">Bug Category Breakdown</span>
+        <span class="badge badge-neutral">Multi-Class Model</span>
+      </div>
+      <div style="height: 240px; position: relative;">
+        <canvas id="categoryChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Ingested Reports Table -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Recent Bug Reports & Triage Status</span>
+      <a href="{{ url_for('bugs.bug_list') }}" class="btn btn-secondary btn-sm">View All {{ total_bugs }} Bugs &rarr;</a>
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Bug ID</th>
+            <th>Title</th>
+            <th>Severity</th>
+            <th>Category</th>
+            <th>Module</th>
+            <th>Risk Score</th>
+            <th>Triage Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in recent_reports %}
+            <tr>
+              <td>
+                <span class="code-snippet">{{ r.bug_id }}</span>
+              </td>
+              <td style="max-width: 280px; font-weight: 500;">
+                <a href="{{ url_for('bugs.bug_detail', bug_id=r.bug_id) }}">{{ r.title }}</a>
+              </td>
+              <td>
+                <span class="badge badge-{{ r.severity|lower }}">{{ r.severity }}</span>
+              </td>
+              <td>{{ r.category }}</td>
+              <td>{{ r.affected_module }}</td>
+              <td>
+                <span class="badge badge-{{ r.risk_level|lower }}">
+                  {{ r.risk_score }} / 100 ({{ r.risk_level }})
+                </span>
+              </td>
+              <td>
+                <span class="badge badge-neutral">{{ r.triage_status }}</span>
+              </td>
+              <td>
+                <a href="{{ url_for('bugs.bug_detail', bug_id=r.bug_id) }}" class="btn btn-secondary btn-sm">Inspect</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Model Status Notice -->
+  <div class="card" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; margin-bottom: 0;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+      <span style="font-size: 13px;">
+        <strong>Active Pipeline:</strong> {{ model_status.version }} (Multinomial Naive Bayes & TF-IDF) &bull; Trained at {{ model_status.trained_at }}
+      </span>
+    </div>
+    <a href="{{ url_for('evaluation.model_evaluation') }}" class="btn btn-secondary btn-sm">Inspect Evaluation Metrics</a>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if total_bugs > 0 %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const severityData = {{ severity_dist|tojson }};
+    const categoryLabels = {{ category_labels|tojson }};
+    const categoryCounts = {{ category_counts|tojson }};
+    initDashboardCharts(severityData, categoryLabels, categoryCounts);
+  });
+</script>
+{% endif %}
+{% endblock %}

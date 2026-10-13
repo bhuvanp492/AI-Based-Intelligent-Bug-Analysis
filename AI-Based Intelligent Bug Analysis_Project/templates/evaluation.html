@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}Model Evaluation • AI Bug Analysis{% endblock %}
+{% block page_heading %}AI Engineering & Evaluation{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+  <div>
+    <h1 class="page-title">Machine Learning Model Evaluation</h1>
+    <p class="page-subtitle">Real validation performance metrics, confusion matrices, and algorithm comparison on test splits.</p>
+  </div>
+  <div>
+    <form method="POST" action="{{ url_for('evaluation.retrain_model') }}" style="display: inline;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit" class="btn btn-primary btn-sm">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        Retrain Pipeline
+      </button>
+    </form>
+  </div>
+</div>
+
+{% if metadata %}
+  <!-- Active Model Status Card -->
+  <div class="card" style="padding: 14px 18px; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+      <div>
+        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700;">Active Pipeline Version</span>
+        <div style="font-size: 16px; font-weight: 700; color: var(--text-main);">{{ metadata.active_version }}</div>
+      </div>
+      <div>
+        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700;">Trained At</span>
+        <div style="font-size: 14px; font-weight: 600;">{{ metadata.trained_at }}</div>
+      </div>
+      <div>
+        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700;">Training Dataset</span>
+        <div style="font-size: 14px; font-weight: 600;">{{ metadata.dataset_name }}</div>
+      </div>
+      <div>
+        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700;">Dataset Split</span>
+        <div style="font-size: 14px; font-weight: 600;">{{ metadata.train_samples }} Train / {{ metadata.test_samples }} Test (Total: {{ metadata.total_samples }})</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary Models Metric KPI Cards -->
+  <div class="grid-3col" style="margin-bottom: 24px;">
+    <!-- Severity Model Metrics -->
+    <div class="card" style="margin-bottom: 0;">
+      <div class="card-header">
+        <span class="card-title">1. Bug Severity Classifier</span>
+        <span class="badge badge-neutral">MultinomialNB</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div class="kpi-card" style="padding: 10px;">
+          <div class="kpi-label">Accuracy</div>
+          <div style="font-size: 20px; font-weight: 700; color: var(--brand-primary);">{{ "%.1f"|format(metadata.metrics.severity.accuracy * 100) }}%</div>
+        </div>
+        <div class="kpi-card" style="padding: 10px;">
+          <div class="kpi-label">Macro F1</div>
+          <div style="font-size: 20px; font-weight: 700; color: var(--brand-primary);">{{ "%.1f"|format(metadata.metrics.severity.f1_score * 100) }}%</div>
+        </div>
+      </div>
+      <div style="font-size: 12px; color: var(--text-muted);">
+        <div>Precision (Macro): <strong>{{ "%.1f"|format(metadata.metrics.severity.precision * 100) }}%</strong></div>
+        <div>Recall (Macro): <strong>{{ "%.1f"|format(metadata.metrics.severity.recall * 100) }}%</strong></div>
+      </div>
+    </div>
+
+    <!-- Category Model Metrics -->
+    <div class="card" style="margin-bottom: 0;">
+      <div class="card-header">
+        <span class="card-title">2. Bug Category Classifier</span>
+        <span class="badge badge-neutral">MultinomialNB</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div class="kpi-card" style="padding: 10px;">
+          <div class="kpi-label">Accuracy</div>
+          <div style="font-size: 20px; font-weight: 700; color: var(--status-success);">{{ "%.1f"|format(metadata.metrics.category.accuracy * 100) }}%</div>
+        </div>
+        <div class="kpi-card" style="padding: 10px;">
+          <div class="kpi-label">Macro F1</div>
+          <div style="font-size: 20px; font-weight: 700; color: var(--status-success);">{{ "%.1f"|format(metadata.metrics.category.f1_score * 100) }}%</div>
+        </div>
+      </div>
+      <div style="font-size: 12px; color: var(--text-muted);">
+        <div>Precision (Macro): <strong>{{ "%.1f"|format(metadata.metrics.category.precision * 100) }}%</strong></div>
+        <div>Recall (Macro): <strong>{{ "%.1f"|format(metadata.metrics.category.recall * 100) }}%</strong></div>
+      </div>
+    </div>
+
+    <!-- Affected Module Model Metrics -->
+    <div class="card" style="margin-bottom: 0;">
+      <div class="card-header">
+        <span class="card-title">3. Affected Module Classifier</span>
+        <span class="badge badge-neutral">MultinomialNB</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div class="kpi-card" style="padding: 10px;">
+          <div class="kpi-label">Accuracy</div>
+          <div style="font-size: 20px; font-weight: 700; color: var(--status-info);">{{ "%.1f"|format(metadata.metrics.module.accuracy * 100) }}%</div>
+        </div>
+        <div class="kpi-card" style="padding: 10px;">
+          <div class="kpi-label">Macro F1</div>
+          <div style="font-size: 20px; font-weight: 700; color: var(--status-info);">{{ "%.1f"|format(metadata.metrics.module.f1_score * 100) }}%</div>
+        </div>
+      </div>
+      <div style="font-size: 12px; color: var(--text-muted);">
+        <div>Precision (Macro): <strong>{{ "%.1f"|format(metadata.metrics.module.precision * 100) }}%</strong></div>
+        <div>Recall (Macro): <strong>{{ "%.1f"|format(metadata.metrics.module.recall * 100) }}%</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Algorithm Comparison: Multinomial Naive Bayes vs Logistic Regression -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Comparative Analysis: Multinomial Naive Bayes vs Logistic Regression</span>
+      <span class="badge badge-neutral">Benchmarked on Identical Test Split</span>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Target Objective</th>
+            <th>Primary Model (MultinomialNB) Accuracy</th>
+            <th>Comparison Model (LogisticRegression) Accuracy</th>
+            <th>Primary Macro F1</th>
+            <th>Comparison Macro F1</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Severity Classification</strong></td>
+            <td><strong>{{ "%.1f"|format(metadata.metrics.severity.accuracy * 100) }}%</strong></td>
+            <td>{{ "%.1f"|format(metadata.metrics.lr_severity.accuracy * 100) }}%</td>
+            <td>{{ "%.1f"|format(metadata.metrics.severity.f1_score * 100) }}%</td>
+            <td>{{ "%.1f"|format(metadata.metrics.lr_severity.f1_score * 100) }}%</td>
+          </tr>
+          <tr>
+            <td><strong>Bug Category Classification</strong></td>
+            <td><strong>{{ "%.1f"|format(metadata.metrics.category.accuracy * 100) }}%</strong></td>
+            <td>{{ "%.1f"|format(metadata.metrics.lr_category.accuracy * 100) }}%</td>
+            <td>{{ "%.1f"|format(metadata.metrics.category.f1_score * 100) }}%</td>
+            <td>{{ "%.1f"|format(metadata.metrics.lr_category.f1_score * 100) }}%</td>
+          </tr>
+          <tr>
+            <td><strong>Affected Module Classification</strong></td>
+            <td><strong>{{ "%.1f"|format(metadata.metrics.module.accuracy * 100) }}%</strong></td>
+            <td>{{ "%.1f"|format(metadata.metrics.lr_module.accuracy * 100) }}%</td>
+            <td>{{ "%.1f"|format(metadata.metrics.module.f1_score * 100) }}%</td>
+            <td>{{ "%.1f"|format(metadata.metrics.lr_module.f1_score * 100) }}%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Confusion Matrix: Bug Category Model -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Bug Category Confusion Matrix (Test Split)</span>
+    </div>
+    <div class="table-container">
+      <table class="data-table" style="text-align: center;">
+        <thead>
+          <tr>
+            <th style="text-align: left;">Actual \ Predicted</th>
+            {% for lbl in metadata.metrics.category.labels %}
+              <th>{{ lbl }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in metadata.metrics.category.confusion_matrix %}
+            {% set row_idx = loop.index0 %}
+            <tr>
+              <td style="text-align: left; font-weight: 600;">{{ metadata.metrics.category.labels[row_idx] }}</td>
+              {% for val in row %}
+                <td style="{% if val > 0 and loop.index0 == row_idx %}background: var(--status-success-soft); font-weight: 700; color: var(--status-success);{% elif val > 0 %}color: var(--status-danger);{% endif %}">
+                  {{ val }}
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+{% else %}
+  <div class="card empty-state">
+    <h3 class="empty-state-title">No Machine Learning Model Trained Yet</h3>
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+      Train your first model on the sample dataset or upload a custom labelled CSV to view evaluation metrics.
+    </p>
+    <form method="POST" action="{{ url_for('evaluation.retrain_model') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit" class="btn btn-primary">Train Model on Sample Dataset (100 Samples)</button>
+    </form>
+  </div>
+{% endif %}
+
+<!-- Training History -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Model Version Training History</span>
+  </div>
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Version</th>
+          <th>Trained At</th>
+          <th>Dataset</th>
+          <th>Samples</th>
+          <th>Severity Acc</th>
+          <th>Category Acc</th>
+          <th>Module Acc</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if history %}
+          {% for h in history %}
+            <tr>
+              <td><span class="code-snippet">{{ h.model_version }}</span></td>
+              <td>{{ h.trained_at }}</td>
+              <td>{{ h.dataset_name }}</td>
+              <td>{{ h.total_samples }} ({{ h.train_samples }}/{{ h.test_samples }})</td>
+              <td>{{ "%.1f"|format(h.sev_parsed.accuracy * 100 if h.sev_parsed else 0) }}%</td>
+              <td>{{ "%.1f"|format(h.cat_parsed.accuracy * 100 if h.cat_parsed else 0) }}%</td>
+              <td>{{ "%.1f"|format(h.mod_parsed.accuracy * 100 if h.mod_parsed else 0) }}%</td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">
+              No previous training history records found.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

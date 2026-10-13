@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Logs • AI Bug Analysis{% endblock %}
+{% block page_heading %}System Governance & Audit Trail{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+  <h1 class="page-title">Governance & Security Audit Logs</h1>
+  <p class="page-subtitle">Chronological audit trail of dataset uploads, model trainings, bug triage decisions, and report exports.</p>
+</div>
+
+<!-- Event Type Filter -->
+<div class="card" style="padding: 14px 16px; margin-bottom: 16px;">
+  <form method="GET" action="{{ url_for('audit.audit_trail') }}" class="filter-bar">
+    <div style="flex: 1; min-width: 200px;">
+      <select name="event_type" class="form-select">
+        <option value="">All Event Types</option>
+        {% for et in type_list %}
+          <option value="{{ et }}" {% if event_filter == et %}selected{% endif %}>{{ et }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm">Filter Audit Logs</button>
+    {% if event_filter %}
+      <a href="{{ url_for('audit.audit_trail') }}" class="btn btn-secondary btn-sm">Reset</a>
+    {% endif %}
+  </form>
+</div>
+
+<!-- Audit Log Table -->
+<div class="card" style="padding: 0; overflow: hidden;">
+  <div class="table-container" style="border: none;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Log ID</th>
+          <th>Timestamp (UTC)</th>
+          <th>Event Type</th>
+          <th>Description & Activity</th>
+          <th>IP Address</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if logs %}
+          {% for l in logs %}
+            <tr>
+              <td><span class="code-snippet">#{{ l.id }}</span></td>
+              <td style="font-size: 12px; white-space: nowrap;">{{ l.timestamp }}</td>
+              <td>
+                <span class="badge {% if 'SECURITY' in l.event_type %}badge-critical{% elif 'TRAINING' in l.event_type %}badge-primary{% elif 'TRIAGE' in l.event_type %}badge-medium{% else %}badge-neutral{% endif %}">
+                  {{ l.event_type }}
+                </span>
+              </td>
+              <td style="font-size: 13px;">
+                {{ l.description }}
+                {% if l.metadata_parsed %}
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                    Metadata: <code>{{ l.metadata_parsed }}</code>
+                  </div>
+                {% endif %}
+              </td>
+              <td style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">
+                {{ l.ip_address or '127.0.0.1' }}
+              </td>
+              <td>
+                <span class="badge badge-low">{{ l.status }}</span>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+              No audit log events match your filter query.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

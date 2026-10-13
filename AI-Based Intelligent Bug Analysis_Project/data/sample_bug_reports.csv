@@ -1,0 +1,26 @@
+bug_id,title,description,affected_module
+BUG-1001,Unauthenticated SQL Injection in product filter API,"The category filter parameter in GET /api/products?cat= is interpolated directly into raw SQL string without prepared statement parameters: SELECT * FROM items WHERE cat = '\" + cat + \"' allowing full database dump.",Database
+BUG-1002,Reflected XSS in search results page,"Search query parameter q is echoed back into page template without HTML entity escaping. Payload <script>alert(1)</script> executes in the user's browser session.",Dashboard
+BUG-1003,Stripe payment webhook signature not validated,"Incoming payment notifications from Stripe are accepted without verifying the Stripe-Signature header, permitting forged successful payment webhooks.",Payment
+BUG-1004,Password hash exposure in user export CSV,"Administrator user export feature includes bcrypt password hashes in column E of the generated spreadsheet file.",Authentication
+BUG-1005,Insecure Direct Object Reference in user profile API,"Authenticated user can view and edit any other user's profile details by modifying the user_id path parameter in GET/PUT /api/users/{id}.",API
+BUG-1006,Memory leak in PDF export microservice,"Generating large invoice PDFs allocates memory buffers that are never garbage collected, causing OOM restarts during peak hours.",API
+BUG-1007,Duplicate transaction generated when user double-clicks pay button,"The pay button lacks client-side debouncing and the backend lacks idempotency keys, charging customers twice on rapid double-clicks.",Payment
+BUG-1008,Responsive navigation menu does not toggle on iOS Safari,"Tapping the hamburger menu button on iOS Safari fails to open navigation drawer due to incompatible touch event handler.",Dashboard
+BUG-1009,Database connection timeout during heavy checkout load,"Connection pool runs out of available connections during flash sale, causing 504 Gateway Timeout on checkout API.",Database
+BUG-1010,Session cookie lacks HttpOnly and Secure flags,"Session identifier cookies are created without HttpOnly and Secure attributes, leaving them vulnerable to theft via XSS attacks.",Authentication
+BUG-1011,Broken discount voucher calculation logic,"Entering coupon code SUMMER20 subtracts 200 dollars instead of 20 percent from cart total, allowing free orders.",Payment
+BUG-1012,Dark theme typography has insufficient contrast,"Secondary text in the analytics table uses dark gray text (#555) on dark background (#222), failing WCAG AA contrast standards.",Dashboard
+BUG-1013,Arbitrary file read via path traversal in avatar endpoint,"User profile image endpoint allows downloading system files using parameter path=../../../../etc/shadow.",API
+BUG-1014,HTTP 500 error when uploading zero-byte profile picture,"Uploading an empty 0-byte image file throws unhandled EmptyFileException instead of returning a friendly 400 Bad Request error.",Registration
+BUG-1015,Off-by-one error in monthly revenue graph,"The last day of the month is omitted from monthly analytics charts because date range loop uses < instead of <= comparison.",Dashboard
+BUG-1016,Missing rate limiting on password reset endpoint,"Users can trigger thousands of password reset emails per minute, leading to email service quota exhaustion and spam abuse.",Authentication
+BUG-1017,TCP socket timeout when contacting notification SMS gateway,"Intermittent packet drops to external SMS gateway cause user OTP verification requests to hang for 60 seconds.",Registration
+BUG-1018,Unsanitized input in shell execution utility,"Administrative server diagnostics page passes command parameter directly to subprocess.Popen(cmd, shell=True), enabling remote shell execution.",API
+BUG-1019,Missing translation for Japanese currency symbol,"JPY prices are rendered with USD dollar sign '$' instead of Yen symbol '¥' on checkout confirmation screen.",Payment
+BUG-1020,Slow query on user activity audit log table,"Querying recent audit events performs full table scan on 5M rows due to missing composite index on (user_id, timestamp).",Database
+BUG-1021,Session not invalidated on password change,"Changing account password does not revoke existing active session tokens on other devices or browsers.",Authentication
+BUG-1022,Tooltip popup trapped behind modal window,"Help tooltip has z-index 100 while modal overlay has z-index 1050, hiding helpful contextual instructions.",Dashboard
+BUG-1023,CORS wildcard policy on sensitive banking API,"The header Access-Control-Allow-Origin: * is returned on all payment endpoints, allowing cross-origin data exfiltration.",Payment
+BUG-1024,Broken phone number validation regex rejects valid UK numbers,"Regular expression for phone verification fails for UK mobile numbers containing spaces or international +44 prefix.",Registration
+BUG-1025,Database deadlock during concurrent wallet transfers,"Transferring balance between two users simultaneously causes deadlock in PostgreSQL transaction manager.",Database

@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Testing and coverage artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+tests/test_models/
+
+# Environment files
+.env
+
+# Instance SQLite databases (preserve local development data outside Git)
+instance/*.db
+instance/uploads/*
+!instance/.gitkeep
+
+# IDE and OS configurations
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

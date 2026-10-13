@@ -1,0 +1,668 @@
+{
+  "active_version": "v_20261013_040308",
+  "trained_at": "2026-10-13 04:03:08",
+  "dataset_name": "sample_training_data.csv",
+  "total_samples": 100,
+  "train_samples": 80,
+  "test_samples": 20,
+  "metrics": {
+    "severity": {
+      "accuracy": 0.35,
+      "precision": 0.2842,
+      "recall": 0.3063,
+      "f1_score": 0.2902,
+      "labels": [
+        "Critical",
+        "High",
+        "Low",
+        "Medium"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          2,
+          1,
+          0
+        ],
+        [
+          1,
+          3,
+          2,
+          2
+        ],
+        [
+          0,
+          2,
+          3,
+          0
+        ],
+        [
+          1,
+          1,
+          1,
+          1
+        ]
+      ],
+      "classification_report": {
+        "Critical": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 3.0
+        },
+        "High": {
+          "precision": 0.375,
+          "recall": 0.375,
+          "f1-score": 0.375,
+          "support": 8.0
+        },
+        "Low": {
+          "precision": 0.42857142857142855,
+          "recall": 0.6,
+          "f1-score": 0.5,
+          "support": 5.0
+        },
+        "Medium": {
+          "precision": 0.3333333333333333,
+          "recall": 0.25,
+          "f1-score": 0.2857142857142857,
+          "support": 4.0
+        },
+        "accuracy": 0.35,
+        "macro avg": {
+          "precision": 0.28422619047619047,
+          "recall": 0.30625,
+          "f1-score": 0.2901785714285714,
+          "support": 20.0
+        },
+        "weighted avg": {
+          "precision": 0.32380952380952377,
+          "recall": 0.35,
+          "f1-score": 0.33214285714285713,
+          "support": 20.0
+        }
+      }
+    },
+    "category": {
+      "accuracy": 0.35,
+      "precision": 0.2222,
+      "recall": 0.2222,
+      "f1_score": 0.1667,
+      "labels": [
+        "Logic Error",
+        "Network Error",
+        "Other",
+        "Performance Issue",
+        "Security Issue",
+        "UI Issue"
+      ],
+      "confusion_matrix": [
+        [
+          1,
+          0,
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          6,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          3,
+          0
+        ]
+      ],
+      "classification_report": {
+        "Logic Error": {
+          "precision": 1.0,
+          "recall": 0.3333333333333333,
+          "f1-score": 0.5,
+          "support": 3.0
+        },
+        "Network Error": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 3.0
+        },
+        "Other": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 2.0
+        },
+        "Performance Issue": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 3.0
+        },
+        "Security Issue": {
+          "precision": 0.3333333333333333,
+          "recall": 1.0,
+          "f1-score": 0.5,
+          "support": 6.0
+        },
+        "UI Issue": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 3.0
+        },
+        "accuracy": 0.35,
+        "macro avg": {
+          "precision": 0.2222222222222222,
+          "recall": 0.2222222222222222,
+          "f1-score": 0.16666666666666666,
+          "support": 20.0
+        },
+        "weighted avg": {
+          "precision": 0.25,
+          "recall": 0.35,
+          "f1-score": 0.225,
+          "support": 20.0
+        }
+      }
+    },
+    "module": {
+      "accuracy": 0.55,
+      "precision": 0.2639,
+      "recall": 0.381,
+      "f1_score": 0.3095,
+      "labels": [
+        "API",
+        "Authentication",
+        "Dashboard",
+        "Database",
+        "Other",
+        "Payment",
+        "Registration"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          4,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          0,
+          2,
+          0
+        ]
+      ],
+      "classification_report": {
+        "API": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        },
+        "Authentication": {
+          "precision": 0.8,
+          "recall": 1.0,
+          "f1-score": 0.8888888888888888,
+          "support": 4.0
+        },
+        "Dashboard": {
+          "precision": 0.7142857142857143,
+          "recall": 1.0,
+          "f1-score": 0.8333333333333334,
+          "support": 5.0
+        },
+        "Database": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 4.0
+        },
+        "Other": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 1.0
+        },
+        "Payment": {
+          "precision": 0.3333333333333333,
+          "recall": 0.6666666666666666,
+          "f1-score": 0.4444444444444444,
+          "support": 3.0
+        },
+        "Registration": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 3.0
+        },
+        "accuracy": 0.55,
+        "macro avg": {
+          "precision": 0.2639455782312925,
+          "recall": 0.38095238095238093,
+          "f1-score": 0.3095238095238096,
+          "support": 20.0
+        },
+        "weighted avg": {
+          "precision": 0.3885714285714286,
+          "recall": 0.55,
+          "f1-score": 0.4527777777777778,
+          "support": 20.0
+        }
+      }
+    },
+    "lr_severity": {
+      "accuracy": 0.35,
+      "precision": 0.2842,
+      "recall": 0.3063,
+      "f1_score": 0.2868,
+      "labels": [
+        "Critical",
+        "High",
+        "Low",
+        "Medium"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          2,
+          1,
+          0
+        ],
+        [
+          1,
+          3,
+          2,
+          2
+        ],
+        [
+          0,
+          2,
+          3,
+          0
+        ],
+        [
+          1,
+          0,
+          2,
+          1
+        ]
+      ],
+      "classification_report": {
+        "Critical": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 3.0
+        },
+        "High": {
+          "precision": 0.42857142857142855,
+          "recall": 0.375,
+          "f1-score": 0.4,
+          "support": 8.0
+        },
+        "Low": {
+          "precision": 0.375,
+          "recall": 0.6,
+          "f1-score": 0.46153846153846156,
+          "support": 5.0
+        },
+        "Medium": {
+          "precision": 0.3333333333333333,
+          "recall": 0.25,
+          "f1-score": 0.2857142857142857,
+          "support": 4.0
+        },
+        "accuracy": 0.35,
+        "macro avg": {
+          "precision": 0.28422619047619047,
+          "recall": 0.30625,
+          "f1-score": 0.2868131868131868,
+          "support": 20.0
+        },
+        "weighted avg": {
+          "precision": 0.3318452380952381,
+          "recall": 0.35,
+          "f1-score": 0.3325274725274725,
+          "support": 20.0
+        }
+      }
+    },
+    "lr_category": {
+      "accuracy": 0.3,
+      "precision": 0.05,
+      "recall": 0.1667,
+      "f1_score": 0.0769,
+      "labels": [
+        "Logic Error",
+        "Network Error",
+        "Other",
+        "Performance Issue",
+        "Security Issue",
+        "UI Issue"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          3,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          6,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          3,
+          0
+        ]
+      ],
+      "classification_report": {
+        "Logic Error": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 3.0
+        },
+        "Network Error": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 3.0
+        },
+        "Other": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 2.0
+        },
+        "Performance Issue": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 3.0
+        },
+        "Security Issue": {
+          "precision": 0.3,
+          "recall": 1.0,
+          "f1-score": 0.46153846153846156,
+          "support": 6.0
+        },
+        "UI Issue": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 3.0
+        },
+        "accuracy": 0.3,
+        "macro avg": {
+          "precision": 0.049999999999999996,
+          "recall": 0.16666666666666666,
+          "f1-score": 0.07692307692307693,
+          "support": 20.0
+        },
+        "weighted avg": {
+          "precision": 0.09,
+          "recall": 0.3,
+          "f1-score": 0.13846153846153847,
+          "support": 20.0
+        }
+      }
+    },
+    "lr_module": {
+      "accuracy": 0.5,
+      "precision": 0.2619,
+      "recall": 0.3452,
+      "f1_score": 0.2812,
+      "labels": [
+        "API",
+        "Authentication",
+        "Dashboard",
+        "Database",
+        "Other",
+        "Payment",
+        "Registration"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          3,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          2,
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          0,
+          2,
+          0
+        ]
+      ],
+      "classification_report": {
+        "API": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        },
+        "Authentication": {
+          "precision": 1.0,
+          "recall": 0.75,
+          "f1-score": 0.8571428571428571,
+          "support": 4.0
+        },
+        "Dashboard": {
+          "precision": 0.5,
+          "recall": 1.0,
+          "f1-score": 0.6666666666666666,
+          "support": 5.0
+        },
+        "Database": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 4.0
+        },
+        "Other": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 1.0
+        },
+        "Payment": {
+          "precision": 0.3333333333333333,
+          "recall": 0.6666666666666666,
+          "f1-score": 0.4444444444444444,
+          "support": 3.0
+        },
+        "Registration": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 3.0
+        },
+        "accuracy": 0.5,
+        "macro avg": {
+          "precision": 0.2619047619047619,
+          "recall": 0.34523809523809523,
+          "f1-score": 0.2811791383219954,
+          "support": 20.0
+        },
+        "weighted avg": {
+          "precision": 0.375,
+          "recall": 0.5,
+          "f1-score": 0.40476190476190477,
+          "support": 20.0
+        }
+      }
+    }
+  }
+}

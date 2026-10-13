@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}System Architecture • AI Bug Analysis{% endblock %}
+{% block page_heading %}System Documentation & Methodology{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+  <h1 class="page-title">Project Architecture & Methodological Documentation</h1>
+  <p class="page-subtitle">Final-Year Computer Science Engineering (CSE) Capstone Project Documentation.</p>
+</div>
+
+<div class="grid-2col">
+  <!-- System Architecture Card -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Engineering Pipeline Architecture</span>
+      <span class="badge badge-neutral">Modular Design</span>
+    </div>
+
+    <div style="font-size: 13px; line-height: 1.7; color: var(--text-main);">
+      <p style="margin-bottom: 12px;">
+        <strong>AI-Based Intelligent Bug Analysis and Security Risk Prioritization System</strong> is designed to relieve developer cognitive burden during bug report triage by executing automated multi-dimensional analysis:
+      </p>
+
+      <div style="background: var(--bg-surface-secondary); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); margin-bottom: 14px;">
+        <ol style="margin-left: 18px; display: flex; flex-direction: column; gap: 8px;">
+          <li><strong>Data Engineering:</strong> Ingestion of CSV feeds with flexible column aliases, encoding detection (UTF-8, UTF-8-BOM, Latin-1), duplicate fingerprinting (SHA-256), and safe text cleaning preserving technical tokens.</li>
+          <li><strong>AI Engineering:</strong> TF-IDF n-gram feature extraction fit strictly on training splits to prevent data leakage. Multi-target Multinomial Naive Bayes probabilistic classifiers predict Severity, Bug Category, and Affected Module.</li>
+          <li><strong>Security Engineering:</strong> Hybrid vulnerability identification combining ML classification with 9 rule-based CWE regex signature engines and contextual evidence snippet extraction.</li>
+          <li><strong>Prioritization:</strong> Deterministic 0-100 risk scoring algorithm incorporating impact factors, prediction uncertainty, and module criticality.</li>
+          <li><strong>Triage & Governance:</strong> SQLite ACID storage, human-in-the-loop review workflow, TF-IDF cosine similarity clustering, and audit logging.</li>
+        </ol>
+      </div>
+
+      <p>
+        <strong>Academic Notice:</strong> Synthetic demonstration datasets are used for initial calibration. The system functions as an automated prioritization aid and strictly does not declare suspected vulnerabilities as confirmed exploits without verification.
+      </p>
+    </div>
+  </div>
+
+  <!-- Risk Prioritization Scoring Formula -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Documented 0–100 Risk Prioritization Formula</span>
+      <span class="badge badge-primary">Deterministic Model</span>
+    </div>
+
+    <div style="font-size: 13px; line-height: 1.6;">
+      <p style="margin-bottom: 10px;">
+        The system assigns a composite risk score on a 0 to 100 integer scale:
+      </p>
+      <div class="code-snippet" style="display: block; padding: 10px; margin-bottom: 12px; font-weight: 600;">
+        Risk Score = Min(100, BaseSeverity + MLSecurityScore + RuleIndicatorsScore + ModuleCriticality)
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+        <div>
+          <strong>1. Base Severity Weight (Max 40 pts):</strong>
+          Critical = 40 pts, High = 25 pts, Medium = 15 pts, Low = 5 pts.
+        </div>
+        <div>
+          <strong>2. ML Security Classification Factor (Max 25 pts):</strong>
+          If predicted category is <code>Security Issue</code>, score = <code>Round(Probability &times; 25)</code>; else 0 pts.
+        </div>
+        <div>
+          <strong>3. Rule-Based Security Indicators (Max 25 pts):</strong>
+          Sum of weights from detected CWE indicator rules, clamped to 25 pts max.
+        </div>
+        <div>
+          <strong>4. Affected Module Impact Factor (Max 10 pts):</strong>
+          Payment, Authentication, Database = 10 pts; API, Registration = 5 pts; Dashboard, UI, Other = 0 pts.
+        </div>
+      </div>
+
+      <div style="margin-top: 14px; border-top: 1px solid var(--border-subtle); padding-top: 10px;">
+        <span style="font-weight: 600; font-size: 12px;">Risk Prioritization Levels:</span>
+        <div style="display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap;">
+          <span class="badge badge-low">0 - 25: Low Risk</span>
+          <span class="badge badge-medium">26 - 55: Medium Risk</span>
+          <span class="badge badge-high">56 - 80: High Risk</span>
+          <span class="badge badge-critical">81 - 100: Critical Risk</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Security Rules & CWE Catalog -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Catalog of Implemented Security Vulnerability Rules</span>
+    <span class="badge badge-neutral">9 Major Vulnerability Types</span>
+  </div>
+
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Rule ID</th>
+          <th>Vulnerability Category</th>
+          <th>CWE ID</th>
+          <th>Weight</th>
+          <th>Recommended Developer Remediation</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rule in security_rules %}
+          <tr>
+            <td><span class="code-snippet">{{ rule.id }}</span></td>
+            <td><strong>{{ rule.name }}</strong></td>
+            <td><span class="badge badge-neutral">{{ rule.cwe }}</span></td>
+            <td>+{{ rule.weight }} pts</td>
+            <td style="font-size: 12px; color: var(--text-muted);">{{ rule.recommendation }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Technology Stack & Credits -->
+<div class="card" style="margin-bottom: 0;">
+  <div class="card-header">
+    <span class="card-title">Technology Specifications</span>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; font-size: 12px;">
+    <div>
+      <strong>Backend & WSGI:</strong>
+      <div style="color: var(--text-muted);">Python 3.12, Flask, WSGI entry point</div>
+    </div>
+    <div>
+      <strong>AI & NLP:</strong>
+      <div style="color: var(--text-muted);">scikit-learn, TF-IDF, Multinomial Naive Bayes, Logistic Regression, joblib</div>
+    </div>
+    <div>
+      <strong>Data & Storage:</strong>
+      <div style="color: var(--text-muted);">Pandas, NumPy, SQLite, Parameterized SQL Queries</div>
+    </div>
+    <div>
+      <strong>Security & Governance:</strong>
+      <div style="color: var(--text-muted);">Anti-CSRF, Safe Filename Normalization, XSS Protection, Audit Logging</div>
+    </div>
+    <div>
+      <strong>Visualization & Reporting:</strong>
+      <div style="color: var(--text-muted);">Chart.js, CSV Exporter, ReportLab PDF Engine</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

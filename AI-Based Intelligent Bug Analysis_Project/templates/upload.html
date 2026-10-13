@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Dataset • AI Bug Analysis{% endblock %}
+{% block page_heading %}Data Ingestion Pipeline{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+  <h1 class="page-title">Dataset Ingestion & Validation Dashboard</h1>
+  <p class="page-subtitle">Upload CSV datasets for batch bug report triage or train updated machine learning classification models.</p>
+</div>
+
+<div class="grid-2col">
+  <!-- Upload Form Card -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Upload CSV Dataset</span>
+      <span class="badge badge-neutral">Max 16 MB</span>
+    </div>
+
+    <form method="POST" action="{{ url_for('datasets.upload') }}" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+      <div class="form-group">
+        <label class="form-label">Select Ingestion Objective *</label>
+        <div style="display: flex; gap: 16px; margin-top: 6px;">
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px;">
+            <input type="radio" name="upload_mode" value="ingest_bugs" checked>
+            <strong>Batch Bug Ingestion</strong> (Process & Store Bugs)
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px;">
+            <input type="radio" name="upload_mode" value="train_model">
+            <strong>Train AI Models</strong> (Supervised Training)
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">CSV File (.csv) *</label>
+        <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+        <div class="form-hint">UTF-8, UTF-8 with BOM, or Latin-1 encoded CSV files are supported.</div>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 16px;">
+        <button type="submit" class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          Upload & Execute Pipeline
+        </button>
+      </div>
+    </form>
+
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+      <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">Download Sample CSV Templates:</div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="{{ url_for('datasets.download_sample_bugs') }}" class="btn btn-secondary btn-sm">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Sample Bug Reports CSV (25 items)
+        </a>
+        <a href="{{ url_for('datasets.download_sample_train') }}" class="btn btn-secondary btn-sm">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Sample Training Dataset CSV (100 items)
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- One-Click Demonstration & Schema Requirements -->
+  <div>
+    <!-- One-Click Demo Loaders -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Instant Sample Dataset Loaders</span>
+        <span class="badge badge-neutral">Built-in Data</span>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+        For rapid testing during viva and presentation, use these one-click buttons to load or retrain without manual file selection:
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <form action="{{ url_for('datasets.load_sample') }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="action" value="ingest_sample_bugs">
+          <button type="submit" class="btn btn-secondary btn-sm" style="width: 100%; justify-content: flex-start;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+            1-Click: Ingest 25 Demonstration Bug Reports
+          </button>
+        </form>
+
+        <form action="{{ url_for('datasets.load_sample') }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="action" value="train_models">
+          <button type="submit" class="btn btn-secondary btn-sm" style="width: 100%; justify-content: flex-start;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+            1-Click: Train Machine Learning Pipeline (100 labelled bugs)
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Supported Schema & Aliases -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Supported Column Formats & Aliases</span>
+      </div>
+      <div style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+        <div><strong>Title (Required):</strong> <code>title</code>, <code>bug_title</code>, <code>summary</code>, <code>issue_title</code></div>
+        <div><strong>Description (Required):</strong> <code>description</code>, <code>bug_description</code>, <code>details</code>, <code>comment</code></div>
+        <div><strong>Bug ID (Optional):</strong> <code>bug_id</code>, <code>id</code>, <code>ticket_id</code>, <code>key</code></div>
+        <div><strong>Severity (Optional/Training):</strong> <code>severity</code>, <code>priority</code>, <code>level</code> (Low, Medium, High, Critical)</div>
+        <div><strong>Category (Optional/Training):</strong> <code>category</code>, <code>type</code>, <code>bug_type</code></div>
+        <div><strong>Module (Optional/Training):</strong> <code>affected_module</code>, <code>module</code>, <code>component</code></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upload / Ingestion Results Summary (if just uploaded) -->
+{% if result %}
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Ingestion Validation Report</span>
+      <span class="badge badge-{% if result.accepted_count > 0 %}low{% else %}critical{% endif %}">
+        {{ result.accepted_count }} Accepted / {{ result.total_rows }} Total
+      </span>
+    </div>
+
+    <div class="kpi-grid" style="margin-bottom: 16px;">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Rows Parsed</div>
+        <div class="kpi-value">{{ result.total_rows }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Accepted & Stored</div>
+        <div class="kpi-value" style="color: var(--status-success);">{{ result.accepted_count }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Rejected Records</div>
+        <div class="kpi-value" style="color: var(--status-danger);">{{ result.rejected_count }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Duplicate Matches</div>
+        <div class="kpi-value" style="color: var(--status-warning);">{{ result.duplicate_count }}</div>
+      </div>
+    </div>
+
+    {% if result.rejected_records %}
+      <div style="margin-top: 14px;">
+        <div style="font-size: 12px; font-weight: 600; color: var(--status-danger); margin-bottom: 6px;">
+          Detailed Row Rejection Reasons ({{ result.rejected_records|length }}):
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>CSV Row #</th>
+                <th>Rejection Cause</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for rej in result.rejected_records %}
+                <tr>
+                  <td><span class="code-snippet">Row {{ rej.row_number }}</span></td>
+                  <td style="color: var(--status-danger);">{{ rej.reason }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if result.duplicate_records %}
+      <div style="margin-top: 14px;">
+        <div style="font-size: 12px; font-weight: 600; color: var(--status-warning); margin-bottom: 6px;">
+          Detected Duplicate Reports ({{ result.duplicate_records|length }}):
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Row #</th>
+                <th>Title Snippet</th>
+                <th>Detection Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for dup in result.duplicate_records %}
+                <tr>
+                  <td><span class="code-snippet">Row {{ dup.row_number }}</span></td>
+                  <td>{{ dup.title }}</td>
+                  <td style="color: var(--status-warning);">{{ dup.reason }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
+
+<!-- Ingestion History Log -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Recent Dataset Ingestions</span>
+  </div>
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Filename</th>
+          <th>Total Rows</th>
+          <th>Accepted</th>
+          <th>Rejected</th>
+          <th>Duplicates</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if recent_ingestions %}
+          {% for ing in recent_ingestions %}
+            <tr>
+              <td>{{ ing.timestamp }}</td>
+              <td><strong>{{ ing.filename }}</strong></td>
+              <td>{{ ing.total_rows }}</td>
+              <td style="color: var(--status-success); font-weight: 600;">{{ ing.accepted_count }}</td>
+              <td style="color: var(--status-danger);">{{ ing.rejected_count }}</td>
+              <td style="color: var(--status-warning);">{{ ing.duplicate_count }}</td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 20px; color: var(--text-muted);">
+              No previous ingestion history logged.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
